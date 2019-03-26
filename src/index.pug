@@ -1,0 +1,9 @@
+extends layout
+
+block content
+  #Main
+  script(src="Main.js")
+  script.
+    var options = { name: 'Hello World' },
+    mountNode = document.getElementById('Main'),
+    app = Elm.Main.embed(mountNode, options);

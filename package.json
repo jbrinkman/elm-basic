@@ -1,0 +1,22 @@
+{
+  "name": "elm-test",
+  "version": "1.0.0",
+  "description": "Simple Elm Application with Browsersync",
+  "main": "index.js",
+  "scripts": {
+    "build": "gulp build",
+    "watch": "gulp watch"
+  },
+  "author": "Joe Brinkman",
+  "license": "MIT",
+  "devDependencies": {
+    "browser-sync": "^2.26.3",
+    "debug": "^4.1.1",
+    "del": "^4.0.0",
+    "elm": "^0.18.0-exp5",
+    "gulp": "^4.0.0",
+    "gulp-elm": "^0.7.3",
+    "gulp-pug": "^4.0.1",
+    "pug": "^2.0.3"
+  }
+}
