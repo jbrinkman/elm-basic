@@ -48,7 +48,7 @@ view model =
                         , containerClass = Nothing
                         , header = Just (text "Confirm Account")
                         , body = Just (viewDialogConfirmBody model)
-                        , footer = Nothing
+                        , footer = Just (button [ onClick AcknowledgeDialog ] [ text "Cancel" ])
                         }
 
                 None ->
@@ -85,6 +85,14 @@ viewDialogConfirmBody model =
                 ]
                 []
             ]
+        ]
+
+
+viewDialogConfirmFooter : Model -> Html Msg
+viewDialogConfirmFooter model =
+    div []
+        [ button [ onClick ConfirmCode ] [ text "Cancel" ]
+        , button [ onClick AcknowledgeDialog ] [ text "Cancel" ]
         ]
 
 

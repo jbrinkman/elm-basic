@@ -35,15 +35,20 @@ update msg model =
         Matched hasMatch ->
             ( { model | matchStep = hasMatch ? Match <| None }, Cmd.none )
 
+        ConfirmParticipant id ->
+            -- TODO: Send off email (server function) to the user with the confirmation code
+            ( { model | matchStep = Verify }
+            , Cmd.none
+            )
+
         AcknowledgeDialog ->
+            ( { model | matchStep = None }, Cmd.none )
+
+        ConfirmCode ->
+            -- TODO: Validate code from user
             ( { model | matchStep = None }, Cmd.none )
 
         SetTableState newState ->
             ( { model | tableState = newState }
-            , Cmd.none
-            )
-
-        ConfirmParticipant id ->
-            ( { model | matchStep = None }
             , Cmd.none
             )

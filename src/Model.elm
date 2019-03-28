@@ -19,6 +19,10 @@ type alias Participant =
     }
 
 
+
+-- TODO: Need to add a Date for when member was created
+
+
 type alias ParticipantMatch =
     { id : String
     , name : String
@@ -38,6 +42,7 @@ type Msg
     | AcknowledgeDialog
     | SetTableState Table.State
     | ConfirmParticipant String
+    | ConfirmCode
 
 
 type alias InputFormControl =
