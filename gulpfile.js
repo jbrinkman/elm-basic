@@ -9,6 +9,7 @@ let paths = {
     dist: "dist",
     pug: "src/**/*.pug",
     pugMain: ['src/index.pug'],
+    static: "src/static/**/*.*",
     copy: ['src/index.html', 'src/**/*.js', 'src/static/**/*.*'],
     elm: "src/**/*.elm",
     elmMain: "src/Main.elm"
@@ -45,7 +46,8 @@ function watch(done) {
 
     gulp.watch(paths.pug, gulp.series(pugCompile));
     gulp.watch(paths.elm, gulp.series(elmCompile));
-    gulp.watch(paths.dist + "/*.{js,html}").on('change', browserSync.reload);
+    gulp.watch(paths.static, gulp.series(copy));
+    gulp.watch(paths.dist + "/**/*.{js,html,css}").on('change', browserSync.reload);
     done();
 }
 
