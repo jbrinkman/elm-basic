@@ -48,7 +48,7 @@ view model =
                         , containerClass = Nothing
                         , header = Just (text "Confirm Account")
                         , body = Just (viewDialogConfirmBody model)
-                        , footer = Just (button [ onClick AcknowledgeDialog ] [ text "Cancel" ])
+                        , footer = Just (viewDialogConfirmFooter model)
                         }
 
                 None ->
@@ -90,8 +90,9 @@ viewDialogConfirmBody model =
 
 viewDialogConfirmFooter : Model -> Html Msg
 viewDialogConfirmFooter model =
+    -- TODO: Need to send to server for validating code
     div []
-        [ button [ onClick ConfirmCode ] [ text "Cancel" ]
+        [ button [ onClick ConfirmCode ] [ text "Verify" ]
         , button [ onClick AcknowledgeDialog ] [ text "Cancel" ]
         ]
 
