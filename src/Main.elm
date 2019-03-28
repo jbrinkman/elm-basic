@@ -1,61 +1,194 @@
-module Main exposing (Flags, Model, Msg(..), init, main, subscriptions, update, view)
+module Main exposing (Model, Msg(..), init, main, update, view)
 
-import Html exposing (button, div, programWithFlags, text)
-import Html.Events exposing (onClick)
+import Date
+import Dialog
+import Html exposing (..)
+import Html.Attributes exposing (..)
+import Html.Events exposing (..)
+import Json.Decode as Json
+import List
+import Random.Pcg as Random
+import Table exposing (defaultCustomizations)
 
 
-main : Program Flags Model Msg
+main : Program Never Model Msg
 main =
-    programWithFlags
-        { init = init
+    program
+        { init = init defaultParticpant participantMatches
         , view = view
         , update = update
-        , subscriptions = subscriptions
+        , subscriptions = \_ -> Sub.none
         }
 
 
-type Msg
-    = Increment
-    | Decrement
 
-
-type alias Flags =
-    { name : String }
+-- MODEL
 
 
 type alias Model =
-    { value : Int
-    , flags : Flags
-    , show : Bool
+    { participant : Participant
+    , participantMatches : List ParticipantMatch
+    , showParticipantMatch : Bool
+    , tableState : Table.State
     }
 
 
-subscriptions : Model -> Sub Msg
-subscriptions model =
-    Sub.none
+type alias Participant =
+    { firstName : String
+    , lastName : String
+    , middleName : String
+    , email : String
+    }
 
 
-init : Flags -> ( Model, Cmd Msg )
-init flags =
-    ( { value = 0
-      , flags = flags
-      , show = False
-      }
-    , Cmd.none
-    )
+type alias ParticipantMatch =
+    { id : Int
+    , name : String
+    , email : String
+    }
 
 
-view : Model -> Html.Html Msg
-view model =
-    div []
-        [ button [ onClick Decrement ] [ text model.flags.name ] ]
+init : Participant -> List ParticipantMatch -> ( Model, Cmd Msg )
+init particpant matches =
+    let
+        model =
+            { participant = particpant
+            , participantMatches = matches
+            , showParticipantMatch = False
+            , tableState = Table.initialSort "Name"
+            }
+    in
+    ( model, Cmd.none )
+
+
+
+-- UPDATE
+
+
+type Msg
+    = Changed String String
+    | Matched Bool
+    | AcknowledgeDialog
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        Increment ->
-            ( { model | value = model.value + 1 }, Cmd.none )
+        Changed id value ->
+            let
+                participant =
+                    model.participant
 
-        Decrement ->
-            ( { model | value = model.value - 1 }, Cmd.none )
+                updatedParticipant =
+                    case id of
+                        "FirstName" ->
+                            { participant | firstName = value }
+
+                        "MiddleName" ->
+                            { participant | middleName = value }
+
+                        "LastName" ->
+                            { participant | lastName = value }
+
+                        "Email" ->
+                            { participant | email = value }
+
+                        _ ->
+                            participant
+            in
+            ( { model | participant = updatedParticipant }, Random.generate Matched (Random.oneIn 2) )
+
+        Matched hasMatch ->
+            ( { model | showParticipantMatch = hasMatch }, Cmd.none )
+
+        AcknowledgeDialog ->
+            ( { model | showParticipantMatch = False }, Cmd.none )
+
+
+
+-- VIEW
+
+
+type alias InputFormControl =
+    { id : String
+    , label : String
+    , getter : Participant -> String
+    }
+
+
+onChange : (String -> msg) -> Attribute msg
+onChange message =
+    on "change" (Json.map message targetValue)
+
+
+view : Model -> Html.Html Msg
+view model =
+    let
+        fields : List InputFormControl
+        fields =
+            [ { id = "FirstName", label = "First Name", getter = .firstName }
+            , { id = "MiddleName", label = "Middle Name", getter = .middleName }
+            , { id = "LastName", label = "Last Name", getter = .lastName }
+            , { id = "Email", label = "Email", getter = .email }
+            ]
+    in
+    div [ class "root" ]
+        [ div [ class "ParticipantForm" ]
+            [ div [ class "FieldGroup" ] (List.map (viewFormControl model.participant) fields)
+            , button [ class "Btn" ] [ text "Submit" ]
+            ]
+        , Dialog.view
+            (if model.showParticipantMatch then
+                Just
+                    { closeMessage = Just AcknowledgeDialog
+                    , containerClass = Nothing
+                    , header = Just (text "Possible Match!")
+                    , body = Just (viewDialogMatchBody model)
+                    , footer = Nothing
+                    }
+
+             else
+                Nothing
+            )
+        ]
+
+
+viewDialogMatchBody : Model -> Html Msg
+viewDialogMatchBody model =
+    p [] [ text ("Let me tell you something important..." ++ model.participant.firstName) ]
+
+
+viewFormControl : Participant -> InputFormControl -> Html Msg
+viewFormControl participant formControl =
+    div [ class "FormControl" ]
+        [ label [ class "Label", for formControl.id ] [ text formControl.label ]
+        , input
+            [ id formControl.id
+            , class "Input"
+            , type_ "Text"
+            , value (formControl.getter participant)
+            , onChange (Changed formControl.id)
+            ]
+            []
+        ]
+
+
+
+-- TABLE CONFIGURATION
+-- DATA
+
+
+participantMatches : List ParticipantMatch
+participantMatches =
+    [ ParticipantMatch 156 "Joe Brinkman" "joe@brinkman.me"
+    , ParticipantMatch 201 "Fred Smith" "fred@smith.me"
+    ]
+
+
+defaultParticpant : Participant
+defaultParticpant =
+    { firstName = "Fred"
+    , middleName = "Mateo"
+    , lastName = "Brinkman"
+    , email = "jbrinkman@engagesoftware.com"
+    }
